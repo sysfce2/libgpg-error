@@ -145,6 +145,9 @@ extra aliasing to avoid having too much identical syscfg files.
 Known Problems
 ==============
 
+WSA Error Codes on Windows
+--------------------------
+
 On Windows, WSA Error Codes can be provided as system error codes and
 will be transparently converted to the corresponding gpg error codes.
 There are two problems with this support:
@@ -166,3 +169,26 @@ There are two problems with this support:
 
 Any WSA Error code has either the first problem or the second (but not
 both), depending on if there is a corresponding Windows error code.
+
+
+Static Linking on GNU systems
+-----------------------------
+
+Typically found in gpgv static build, static linking using GNU C
+library results a warning message from a linker about the getpwnam
+function with libgpg-error.  This is usually no problem at all.
+
+The warning is emitted because of gnu.warning section in GNU C
+library.  The intention of GNU C library is that, it deserves a
+warning because getpwnam uses the Name Service Switch and it might
+result dynamic loading with possibly incompatible library.
+
+For older systems, it was true.  Nowadays, an application does not
+directly load dynamic module for the Name Service Switch.  It is
+usually done by nscd (name service cache daemon).
+
+Only when nscd is disabled or not available, an application loads
+dynamic module.  Only for this corner case, the warning from linker is
+relevant.  It is usually not the case on modern systems.
+
+See T8066 for further discussion.
