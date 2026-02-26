@@ -1223,6 +1223,7 @@ static struct cookie_io_functions_s estream_functions_fd =
 /*
  * Implementation of SOCKET based I/O.
  */
+#define IS_INVALID_SOCKET(a)    ((a) == INVALID_SOCKET)
 
 /* Cookie for SOCKET objects.  */
 typedef struct estream_cookie_sock
@@ -1276,7 +1277,7 @@ func_sock_read (void *cookie, void *buffer, size_t size)
 
   if (!size)
     bytes_read = -1; /* We don't know whether anything is pending.  */
-  else if (IS_INVALID_FD (file_cookie->sock))
+  else if (IS_INVALID_SOCKET (file_cookie->sock))
     {
       _gpgrt_yield ();
       bytes_read = 0;
@@ -1308,7 +1309,7 @@ func_sock_write (void *cookie, const void *buffer, size_t size)
 
   trace (("enter: cookie=%p buffer=%p size=%d", cookie, buffer, (int)size));
 
-  if (IS_INVALID_FD (file_cookie->sock))
+  if (IS_INVALID_SOCKET (file_cookie->sock))
     {
       _gpgrt_yield ();
       bytes_written = size; /* Yeah:  Success writing to the bit bucket.  */
@@ -1358,7 +1359,7 @@ func_sock_ioctl (void *cookie, int cmd, void *ptr, size_t *len)
   if (cmd == COOKIE_IOCTL_NONBLOCK && !len)
     {
       sock_cookie->nonblock = !!ptr;
-      if (IS_INVALID_FD (sock_cookie->sock))
+      if (IS_INVALID_SOCKET (sock_cookie->sock))
         {
           _set_errno (EINVAL);
           ret = -1;
@@ -1395,7 +1396,7 @@ func_sock_destroy (void *cookie)
 
   if (sock_cookie)
     {
-      if (IS_INVALID_FD (sock_cookie->sock))
+      if (IS_INVALID_SOCKET (sock_cookie->sock))
         err = 0;
       else
         err = sock_cookie->no_close? 0 : closesocket (sock_cookie->sock);
